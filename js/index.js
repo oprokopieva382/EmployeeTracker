@@ -1,12 +1,12 @@
 const inquirer = require("inquirer");
 
-const { app, dbConnection, connectedToDataBase } = require("../app.js");
+const { dbConnection, connectedToDataBase } = require("../app.js");
 
 // Function to handle each action based on the user's choice
 const handleAction = async (action) => {
   switch (action) {
     case "View all departments":
-      // Handle the view all departments logic
+      await viewAllDepartments()
       break;
     case "View all roles":
       // Handle the view all roles logic
