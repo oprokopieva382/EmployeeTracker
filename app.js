@@ -1,8 +1,4 @@
-const express = require("express");
 const mysql = require("mysql2/promise");
-
-const PORT = process.env.PORT || 3001;
-const app = express();
 
 // Connect to database
 const dbConnection = mysql.createConnection({
@@ -20,9 +16,5 @@ const connectedToDataBase = async () => {
     console.error("Database connection failed: " + err.stack);
   }
 };
-
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
 
 module.exports = {dbConnection, connectedToDataBase}
