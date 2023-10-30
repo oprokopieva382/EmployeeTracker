@@ -1,5 +1,5 @@
 const inquirer = require("inquirer");
-const {viewAllDepartments} = require("./requests.js");
+const { viewAllDepartments, viewAllRoles } = require("./requests.js");
 
 // Function to handle each action based on the user's choice
 const handleAction = async (action) => {
@@ -8,7 +8,7 @@ const handleAction = async (action) => {
       await viewAllDepartments();
       break;
     case "View All Roles":
-      // Handle the view all roles logic
+    await viewAllRoles();
       break;
     case "View All Employees":
       // Handle the view all employees logic
