@@ -4,6 +4,8 @@ const {
   viewAllRoles,
   viewAllEmployees,
   addDepartment,
+  addRole,
+  getDepartmentsList,
 } = require("./requests.js");
 
 // Function to handle each action based on the user's choice
@@ -27,7 +29,9 @@ const handleAction = async (action) => {
       mainMenuPrompts();
       break;
     case "Add A Role":
-      // Handle the add role logic
+      const info = await promptUserForRoleInfo();
+      await addRole(info);
+      mainMenuPrompts();
       break;
     case "Add An Employee":
       // Handle the add employee logic
@@ -77,6 +81,30 @@ const promptUserForDepartmentName = async () => {
     },
   ]);
   return answer.departmentName;
+};
+
+// Prompt the user to add role details
+const promptUserForRoleInfo = async () => {
+  const departmentsList = await getDepartmentsList();
+  const answers = await inquirer.prompt([
+    {
+      type: "input",
+      name: "roleTitle",
+      message: "What is the name of the role?",
+    },
+    {
+      type: "number",
+      name: "roleSalary",
+      message: "What is the salary for the role?",
+    },
+    {
+      type: "list",
+      name: "departmentName",
+      message: "Which department does the role belong to?",
+      choices: departmentsList.map((department) => department.name),
+    },
+  ]);
+  return answers;
 };
 
 // Start main menu prompts

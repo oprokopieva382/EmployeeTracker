@@ -95,9 +95,49 @@ const addDepartment = async (name) => {
   }
 };
 
+// Function to get departments list from the database
+const getDepartmentsList = async () => {
+  try {
+    const [rows] = await dbConnection.execute("SELECT name FROM department");
+    return rows;
+  } catch (err) {
+    console.error("Error fetching departments:", err);
+    return [];
+  }
+};
+
+// Function to add a role to the database
+const addRole = async (info) => {
+  const { roleTitle, roleSalary, departmentName } = info;
+
+  try {
+    const [departmentRows] = await dbConnection.execute(
+      "SELECT id FROM department WHERE name = ?",
+      [departmentName]
+    );
+
+    if (departmentRows.length === 0) {
+      console.error("Department not found.");
+      return;
+    }
+  
+    const departmentId = departmentRows[0].id;
+
+    await dbConnection.execute(
+      "INSERT INTO role (title, salary, department_id) VALUES (?, ?, ?)",
+      [roleTitle, roleSalary, departmentId]
+    );
+    console.log(`Added ${roleTitle} to the database`);
+  } catch (err) {
+    console.error("Error:", err);
+  }
+};
+
 module.exports = {
   viewAllDepartments,
   viewAllRoles,
   viewAllEmployees,
   addDepartment,
+  addRole,
+  getDepartmentsList,
 };
