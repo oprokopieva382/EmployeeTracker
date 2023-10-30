@@ -8,7 +8,7 @@ const viewAllDepartments = async () => {
     //display
     console.log("");
     console.log("id", "name");
-    console.log("__", "___________");
+    console.log("--", "-----------");
     rows.map((department) => {
       console.log(`${department.id}  ${department.name}`);
     });
@@ -29,7 +29,7 @@ const viewAllRoles = async () => {
     //display
     console.log("");
     console.log("id   title                  department     salary");
-    console.log("__  _____________________  ______________  ______");
+    console.log("--  ---------------------  --------------  ------");
     rows.map((role) => {
       const formattedId = role.id.toString().padStart(2, " ");
       const formattedTitle = role.title.padEnd(20, " ");
@@ -44,4 +44,39 @@ const viewAllRoles = async () => {
   }
 };
 
-module.exports = { viewAllDepartments, viewAllRoles };
+// Function to retrieve and display all roles
+const viewAllEmployees = async () => {
+  try {
+    const [rows] = await dbConnection.execute(
+      `SELECT e.id, e.first_name, e.last_name, 
+      r.title, r.salary, d.name, 
+      CONCAT(m.first_name, " ", m.last_name) AS manager
+      FROM employees e
+      JOIN role r ON r.id = e.role_id
+      JOIN department d ON r.department_id = d.id
+      LEFT JOIN employees m ON m.id = e.manager_id
+      `
+    );
+
+    //display
+    console.log("");
+    console.log("id  first_name   last_name   title                  department   salary   manager");
+    console.log("--  -----------  ----------  -------------------  ------------   -------  --------");
+    rows.map((employee) => {
+      const formattedId = employee.id.toString().padStart(2, " ");
+      const formattedFirstName = employee.first_name.padEnd(11, " ");
+      const formattedLastName = employee.last_name.padEnd(10, " ");
+      const formattedTitle = employee.title.padEnd(20, " ");
+      const formattedSalary = employee.salary.padStart(6, " ");
+      const formattedDepartment = employee.name.padEnd(12, " ");
+      const formattedManager = employee.manager ? employee.manager : "null";
+      console.log(
+        `${formattedId}  ${formattedFirstName}  ${formattedLastName}  ${formattedTitle}  ${formattedDepartment}   ${formattedSalary}  ${formattedManager}`
+      );
+    });
+  } catch (err) {
+    console.error("Error:", err);
+  }
+};
+
+module.exports = { viewAllDepartments, viewAllRoles, viewAllEmployees };
