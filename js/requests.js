@@ -60,8 +60,12 @@ const viewAllEmployees = async () => {
 
     //display
     console.log("");
-    console.log("id  first_name   last_name   title                  department   salary   manager");
-    console.log("--  -----------  ----------  -------------------  ------------   -------  --------");
+    console.log(
+      "id  first_name   last_name   title                  department   salary   manager"
+    );
+    console.log(
+      "--  -----------  ----------  -------------------  ------------   -------  --------"
+    );
     rows.map((employee) => {
       const formattedId = employee.id.toString().padStart(2, " ");
       const formattedFirstName = employee.first_name.padEnd(11, " ");
@@ -79,4 +83,61 @@ const viewAllEmployees = async () => {
   }
 };
 
-module.exports = { viewAllDepartments, viewAllRoles, viewAllEmployees };
+// Function to add a department to the database
+const addDepartment = async (name) => {
+  try {
+    await dbConnection.execute("INSERT INTO department (name) VALUES (?)", [
+      name,
+    ]);
+    console.log(`Added ${name} to the database`);
+  } catch (err) {
+    console.error("Error:", err);
+  }
+};
+
+// Function to get departments list from the database
+const getDepartmentsList = async () => {
+  try {
+    const [rows] = await dbConnection.execute("SELECT name FROM department");
+    return rows;
+  } catch (err) {
+    console.error("Error fetching departments:", err);
+    return [];
+  }
+};
+
+// Function to add a role to the database
+const addRole = async (info) => {
+  const { roleTitle, roleSalary, departmentName } = info;
+
+  try {
+    const [departmentRows] = await dbConnection.execute(
+      "SELECT id FROM department WHERE name = ?",
+      [departmentName]
+    );
+
+    if (departmentRows.length === 0) {
+      console.error("Department not found.");
+      return;
+    }
+  
+    const departmentId = departmentRows[0].id;
+
+    await dbConnection.execute(
+      "INSERT INTO role (title, salary, department_id) VALUES (?, ?, ?)",
+      [roleTitle, roleSalary, departmentId]
+    );
+    console.log(`Added ${roleTitle} to the database`);
+  } catch (err) {
+    console.error("Error:", err);
+  }
+};
+
+module.exports = {
+  viewAllDepartments,
+  viewAllRoles,
+  viewAllEmployees,
+  addDepartment,
+  addRole,
+  getDepartmentsList,
+};
