@@ -1,29 +1,28 @@
 const inquirer = require("inquirer");
-
-const { dbConnection, connectedToDataBase } = require("../app.js");
+const {viewAllDepartments} = require("./requests.js");
 
 // Function to handle each action based on the user's choice
 const handleAction = async (action) => {
   switch (action) {
-    case "View all departments":
-      await viewAllDepartments()
+    case "View All Departments":
+      await viewAllDepartments();
       break;
-    case "View all roles":
+    case "View All Roles":
       // Handle the view all roles logic
       break;
-    case "View all employees":
+    case "View All Employees":
       // Handle the view all employees logic
       break;
-    case "Add a department":
+    case "Add A Department":
       // Handle the add department logic
       break;
-    case "Add a role":
+    case "Add A Role":
       // Handle the add role logic
       break;
-    case "Add an employee":
+    case "Add An Employee":
       // Handle the add employee logic
       break;
-    case "Update an employee role":
+    case "Update An Employee Role":
       // Handle the update employee role logic
       break;
     default:
@@ -34,7 +33,7 @@ const handleAction = async (action) => {
 // Main menu prompts
 const mainMenuPrompts = async () => {
   try {
-    await connectedToDataBase();
+    // await connectedToDataBase();
     const answers = await inquirer.prompt([
       {
         type: "list",
@@ -55,9 +54,7 @@ const mainMenuPrompts = async () => {
     await handleAction(answers.menuChoiceToPick);
   } catch (err) {
     console.error("Error:", err);
-  } finally {
-    await dbConnection.end();
-  }
+  } 
 };
 
 // Start main menu prompts

@@ -1,20 +1,15 @@
 const mysql = require("mysql2/promise");
 
-// Connect to database
-const dbConnection = mysql.createConnection({
-  host: "localhost",
-  user: "root",
-  password: "rootroot",
-  database: "",
-});
+// Create a connection pool
+const dbConnection = mysql.createPool(
+  {
+    host: "localhost",
+    user: "root",
+    password: "rootroot",
+    database: "employeetracker_db",
+  },
+  console.log(`Connected to the employeetracker_db database.`),
+ 
+);
 
-const connectedToDataBase = async () => {
-  try {
-    await dbConnection.connect();
-    console.log(`Connected to the database.`);
-  } catch (err) {
-    console.error("Database connection failed: " + err.stack);
-  }
-};
-
-module.exports = {dbConnection, connectedToDataBase}
+module.exports = { dbConnection };
