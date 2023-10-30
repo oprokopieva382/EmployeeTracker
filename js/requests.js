@@ -1,17 +1,26 @@
 const { dbConnection } = require("../app.js");
+const Table = require("easy-table");
+
 
 // Function to retrieve and display all departments
 const viewAllDepartments = async () => {
   try {
-    const [rows] = await dbConnection.execute("SELECT * FROM department");
+    const [rows] = await dbConnection
+      .promise()
+      .query("SELECT * FROM department");
+    console.log(rows);
 
-    //display
-    console.log("");
-    console.log("id", "name");
-    console.log("--", "-----------");
-    rows.map((department) => {
-      console.log(`${department.id}  ${department.name}`);
+    // Create a new table
+    const table = new Table();
+
+    rows.forEach((department) => {
+      table.cell("ID", department.id);
+      table.cell("Name", department.name);
+      table.newRow();
     });
+
+    // Display the table of departments
+    console.log(table.toString());
   } catch (err) {
     console.error("Error:", err);
   }
@@ -20,64 +29,58 @@ const viewAllDepartments = async () => {
 // Function to retrieve and display all roles
 const viewAllRoles = async () => {
   try {
-    const [rows] = await dbConnection.execute(
-      `SELECT role.id, role.title, department.name AS department, role.salary FROM role
-      JOIN department
-      ON role.department_id = department.id`
-    );
+    const [rows] = await dbConnection.promise().query(`
+      SELECT role.id, role.title, department.name AS department, role.salary 
+      FROM role
+      JOIN department ON role.department_id = department.id
+    `);
 
-    //display
-    console.log("");
-    console.log("id   title                  department     salary");
-    console.log("--  ---------------------  --------------  ------");
-    rows.map((role) => {
-      const formattedId = role.id.toString().padStart(2, " ");
-      const formattedTitle = role.title.padEnd(20, " ");
-      const formattedSalary = role.salary.padStart(6, " ");
-      const formattedDepartment = role.department.padEnd(14, " ");
-      console.log(
-        `${formattedId}   ${formattedTitle}  ${formattedDepartment}  ${formattedSalary}`
-      );
+    // Create a new table
+    const table = new Table();
+
+    rows.forEach((role) => {
+      table.cell("ID", role.id);
+      table.cell("Title", role.title);
+      table.cell("Department", role.department);
+      table.cell("Salary", role.salary);
+      table.newRow();
     });
+
+    // Display the table of roles
+    console.log(table.toString());
   } catch (err) {
     console.error("Error:", err);
   }
 };
 
-// Function to retrieve and display all roles
+// Function to retrieve and display all employees
 const viewAllEmployees = async () => {
   try {
-    const [rows] = await dbConnection.execute(
-      `SELECT e.id, e.first_name, e.last_name, 
-      r.title, r.salary, d.name, 
+    const [rows] = await dbConnection.promise().query(`
+      SELECT e.id, e.first_name, e.last_name, r.title, r.salary, d.name, 
       CONCAT(m.first_name, " ", m.last_name) AS manager
       FROM employees e
       JOIN role r ON r.id = e.role_id
       JOIN department d ON r.department_id = d.id
       LEFT JOIN employees m ON m.id = e.manager_id
-      `
-    );
+    `);
 
-    //display
-    console.log("");
-    console.log(
-      "id  first_name   last_name   title                  department   salary   manager"
-    );
-    console.log(
-      "--  -----------  ----------  -------------------  ------------   -------  --------"
-    );
-    rows.map((employee) => {
-      const formattedId = employee.id.toString().padStart(2, " ");
-      const formattedFirstName = employee.first_name.padEnd(11, " ");
-      const formattedLastName = employee.last_name.padEnd(10, " ");
-      const formattedTitle = employee.title.padEnd(20, " ");
-      const formattedSalary = employee.salary.padStart(6, " ");
-      const formattedDepartment = employee.name.padEnd(12, " ");
-      const formattedManager = employee.manager ? employee.manager : "null";
-      console.log(
-        `${formattedId}  ${formattedFirstName}  ${formattedLastName}  ${formattedTitle}  ${formattedDepartment}   ${formattedSalary}  ${formattedManager}`
-      );
+    // Create a new table
+    const table = new Table();
+
+    rows.forEach((employee) => {
+      table.cell("ID", employee.id);
+      table.cell("First Name", employee.first_name);
+      table.cell("Last Name", employee.last_name);
+      table.cell("Title", employee.title);
+      table.cell("Salary", employee.salary);
+      table.cell("Department", employee.name);
+      table.cell("Manager", employee.manager || "null");
+      table.newRow();
     });
+
+    // Display the table of employees
+    console.log(table.toString());
   } catch (err) {
     console.error("Error:", err);
   }
@@ -86,9 +89,9 @@ const viewAllEmployees = async () => {
 // Function to add a department to the database
 const addDepartment = async (name) => {
   try {
-    await dbConnection.execute("INSERT INTO department (name) VALUES (?)", [
-      name,
-    ]);
+    await dbConnection
+      .promise()
+      .query("INSERT INTO department (name) VALUES (?)", [name]);
     console.log(`Added ${name} to the database`);
   } catch (err) {
     console.error("Error:", err);
@@ -98,7 +101,9 @@ const addDepartment = async (name) => {
 // Function to get departments list from the database
 const getDepartmentsList = async () => {
   try {
-    const [rows] = await dbConnection.execute("SELECT name FROM department");
+    const [rows] = await dbConnection
+      .promise()
+      .query("SELECT name FROM department");
     return rows;
   } catch (err) {
     console.error("Error fetching departments:", err);
@@ -111,22 +116,23 @@ const addRole = async (info) => {
   const { roleTitle, roleSalary, departmentName } = info;
 
   try {
-    const [departmentRows] = await dbConnection.execute(
-      "SELECT id FROM department WHERE name = ?",
-      [departmentName]
-    );
+    const [departmentRows] = await dbConnection
+      .promise()
+      .query("SELECT id FROM department WHERE name = ?", [departmentName]);
 
     if (departmentRows.length === 0) {
       console.error("Department not found.");
       return;
     }
-  
+
     const departmentId = departmentRows[0].id;
 
-    await dbConnection.execute(
-      "INSERT INTO role (title, salary, department_id) VALUES (?, ?, ?)",
-      [roleTitle, roleSalary, departmentId]
-    );
+    await dbConnection
+      .promise()
+      .query(
+        "INSERT INTO role (title, salary, department_id) VALUES (?, ?, ?)",
+        [roleTitle, roleSalary, departmentId]
+      );
     console.log(`Added ${roleTitle} to the database`);
   } catch (err) {
     console.error("Error:", err);

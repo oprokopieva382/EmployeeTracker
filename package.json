@@ -8,7 +8,9 @@
     "start": "node js/index.js"
   },
   "dependencies": {
+    "easy-table": "^1.2.0",
+    "figlet": "^1.7.0",
     "inquirer": "^8.2.4",
-    "mysql2": "^3.6.2"
+    "mysql2": "^2.2.5"
   }
 }

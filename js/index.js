@@ -1,4 +1,5 @@
 const inquirer = require("inquirer");
+const figlet = require("figlet");
 const {
   viewAllDepartments,
   viewAllRoles,
@@ -47,7 +48,6 @@ const handleAction = async (action) => {
 // Main menu prompts
 const mainMenuPrompts = async () => {
   try {
-    // await connectedToDataBase();
     const answers = await inquirer.prompt([
       {
         type: "list",
@@ -107,5 +107,26 @@ const promptUserForRoleInfo = async () => {
   return answers;
 };
 
+const projectNameDisplay = ()=> {
+
+const projectText = "Employee\n\nManager";
+ figlet.text(
+   projectText,
+   {
+     font: "Standard", 
+   },
+   (err, data) => {
+     if (err) {
+       console.log("Something went wrong...");
+       console.dir(err);
+       return;
+     }
+     console.log(data);
+     mainMenuPrompts();
+   }
+ );
+}
+
 // Start main menu prompts
-mainMenuPrompts();
+projectNameDisplay()
+
