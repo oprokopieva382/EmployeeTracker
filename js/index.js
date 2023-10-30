@@ -3,6 +3,7 @@ const {
   viewAllDepartments,
   viewAllRoles,
   viewAllEmployees,
+  addDepartment,
 } = require("./requests.js");
 
 // Function to handle each action based on the user's choice
@@ -13,15 +14,17 @@ const handleAction = async (action) => {
       mainMenuPrompts();
       break;
     case "View All Roles":
-    await viewAllRoles();
+      await viewAllRoles();
       mainMenuPrompts();
       break;
     case "View All Employees":
       await viewAllEmployees();
-        mainMenuPrompts();
+      mainMenuPrompts();
       break;
     case "Add A Department":
-      // Handle the add department logic
+      const name = await promptUserForDepartmentName();
+      await addDepartment(name);
+      mainMenuPrompts();
       break;
     case "Add A Role":
       // Handle the add role logic
@@ -61,7 +64,19 @@ const mainMenuPrompts = async () => {
     await handleAction(answers.menuChoiceToPick);
   } catch (err) {
     console.error("Error:", err);
-  } 
+  }
+};
+
+// Prompt the user for the department name
+const promptUserForDepartmentName = async () => {
+  const answer = await inquirer.prompt([
+    {
+      type: "input",
+      name: "departmentName",
+      message: "What is the name of the department?",
+    },
+  ]);
+  return answer.departmentName;
 };
 
 // Start main menu prompts

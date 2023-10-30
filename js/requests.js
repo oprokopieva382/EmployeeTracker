@@ -60,8 +60,12 @@ const viewAllEmployees = async () => {
 
     //display
     console.log("");
-    console.log("id  first_name   last_name   title                  department   salary   manager");
-    console.log("--  -----------  ----------  -------------------  ------------   -------  --------");
+    console.log(
+      "id  first_name   last_name   title                  department   salary   manager"
+    );
+    console.log(
+      "--  -----------  ----------  -------------------  ------------   -------  --------"
+    );
     rows.map((employee) => {
       const formattedId = employee.id.toString().padStart(2, " ");
       const formattedFirstName = employee.first_name.padEnd(11, " ");
@@ -79,4 +83,21 @@ const viewAllEmployees = async () => {
   }
 };
 
-module.exports = { viewAllDepartments, viewAllRoles, viewAllEmployees };
+// Function to add a department to the database
+const addDepartment = async (name) => {
+  try {
+    await dbConnection.execute("INSERT INTO department (name) VALUES (?)", [
+      name,
+    ]);
+    console.log(`Added ${name} to the database`);
+  } catch (err) {
+    console.error("Error:", err);
+  }
+};
+
+module.exports = {
+  viewAllDepartments,
+  viewAllRoles,
+  viewAllEmployees,
+  addDepartment,
+};
