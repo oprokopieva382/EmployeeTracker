@@ -7,9 +7,8 @@ const viewAllDepartments = async () => {
     const [rows] = await dbConnection
       .promise()
       .query("SELECT * FROM department");
-    console.log(rows);
-
-    // Create a new table
+  
+      // Create a new table
     const table = new Table();
 
     rows.forEach((department) => {
@@ -134,26 +133,31 @@ const viewEmployeesByManager = async (managerInfo) => {
 const viewEmployeesByDepartment = async (departmentInfo) => {
   try {
     const { departmentName } = departmentInfo;
-    // Get the role ID based on the selected department name
-    const [departmentRows] = await dbConnection
+    // Get the role IDs of employees in the selected department
+    const [roleRows] = await dbConnection
       .promise()
-      .query("SELECT id FROM department WHERE name = ?", [departmentName]);
-    if (departmentRows.length === 0) {
-      console.error("Department not found.");
+      .query(
+        "SELECT role.id FROM role " +
+          "JOIN department ON role.department_id = department.id " +
+          "WHERE department.name = ?",
+        [departmentName]
+      );
+
+    if (roleRows.length === 0) {
+      console.error("No employees found in the selected department.");
       return;
     }
 
-    const roleId = departmentRows[0].id;
+    const roleIds = roleRows.map((role) => role.id);
 
-    // Get the employees who have the selected department
+    // Get the employees with the selected role IDs
     const [rows] = await dbConnection.promise().query(
       `
-      SELECT e.first_name, e.last_name,
-      CONCAT(e.first_name, " ", e.last_name) AS employee
+      SELECT e.first_name, e.last_name
       FROM employees e
-      WHERE e.role_id =?
+      WHERE e.role_id IN (?)
     `,
-      [roleId]
+      [roleIds]
     );
 
     // Create a new table

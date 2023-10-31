@@ -22,4 +22,4 @@ Please refer to the LICENSE in the repo.
 If you have any questions find me on [GitHub](https://github.com/oprokopieva382) or feel free email me oprokopieva382@gmail.com
 
 ## Links
-Check out the walkthrough video [click here](https://drive.google.com/file/d/18ywym_7tD84P7QQhNgk0wkDN27YbZzHI/view)
+Check out the walkthrough video [click here](https://drive.google.com/file/d/16twPPlU38YrE4Ky72S-Y-DRrqNk0rqsz/view)
