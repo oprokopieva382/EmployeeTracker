@@ -130,7 +130,7 @@ const getManagersList = async () => {
         "SELECT CONCAT(e.first_name, ' ', e.last_name) AS full_name FROM employees e"
       );
 
-    return rows
+    return rows;
   } catch (err) {
     console.error("Error fetching departments:", err);
     return [];
@@ -166,9 +166,15 @@ const addRole = async (info) => {
 };
 
 // Function to add a employee to the database
-const addEmployee = async (employeeData)=> {
+const addEmployee = async (employeeData) => {
   try {
     const { firstName, lastName, roleDetails, managerDetails } = employeeData;
+ 
+    // Make sure roleDetails is a string (role title)
+    if (typeof roleDetails !== 'string') {
+      console.error("Invalid role selection.");
+      return;
+    }
 
     // Get the role ID based on the selected role title
     const [roleRows] = await dbConnection
@@ -183,11 +189,35 @@ const addEmployee = async (employeeData)=> {
     const roleId = roleRows[0].id;
 
     // Get the manager ID based on the selected manager full name
-    
-  }catch(err){
+    let managerId = null;
+    if (managerDetails !== "None") {
+      const [managerRows] = await dbConnection
+        .promise()
+        .query(
+          "SELECT id FROM employees WHERE CONCAT(first_name, ' ', last_name) = ?",
+          [managerDetails]
+        );
+
+      if (managerRows.length === 0) {
+        console.error("Manager not found.");
+        return;
+      }
+
+      managerId = managerRows[0].id;
+    }
+    // Insert the new employee into the database
+    await dbConnection
+      .promise()
+      .query(
+        "INSERT INTO employees (first_name, last_name, role_id, manager_id) VALUES  (?, ?, ?, ?)",
+        [firstName, lastName, roleId, managerId]
+      );
+    console.log(`Added ${firstName} ${lastName} to the database`);
+  } catch (err) {
     console.error("Error adding employee:", err);
   }
 };
+
 module.exports = {
   viewAllDepartments,
   viewAllRoles,

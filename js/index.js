@@ -117,6 +117,7 @@ const promptUserForEmployeeInfo = async () => {
   const rolesList = await getRolesList();
   const managersList = await getManagersList();
 
+  const roleTitles = rolesList.map((role) => role.title);
   // Add "None" as the first option for the manager
   const managerChoices = [
     "None",
@@ -136,9 +137,9 @@ const promptUserForEmployeeInfo = async () => {
     },
     {
       type: "list",
-      name: "rolesDetails",
+      name: "roleDetails",
       message: "What is the employee's role?",
-      choices: rolesList.map((role) => role.title),
+      choices: roleTitles,
     },
     {
       type: "list",
