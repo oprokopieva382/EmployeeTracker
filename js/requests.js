@@ -7,9 +7,8 @@ const viewAllDepartments = async () => {
     const [rows] = await dbConnection
       .promise()
       .query("SELECT * FROM department");
-    console.log(rows);
-
-    // Create a new table
+  
+      // Create a new table
     const table = new Table();
 
     rows.forEach((department) => {
