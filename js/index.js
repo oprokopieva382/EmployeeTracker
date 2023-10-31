@@ -48,6 +48,11 @@ const handleAction = async (action) => {
       await updateEmployeeRole(dataToUpdate);
       mainMenuPrompts();
       break;
+    case "Update An Employee Manager":
+      const toUpdateData = await promptUserForUpdateManager();
+      await updateEmployeeManager(toUpdateData);
+      mainMenuPrompts();
+      break;
     default:
       console.log("Invalid choice. Please choose a valid option.");
   }
@@ -69,6 +74,7 @@ const mainMenuPrompts = async () => {
           "Add A Role",
           "View All Departments",
           "Add A Department",
+          "Update An Employee Manager"
         ],
       },
     ]);
@@ -174,6 +180,32 @@ const promptUserForUpdateRole = async () => {
       name: "rolesListInfo",
       message: "Which role do you want to assign the selected employee?",
       choices: roleTitles,
+    },
+  ]);
+  return answers;
+};
+
+// Prompt the user to update employee manager
+const promptUserForUpdateManager = async () => {
+  const employeesList = await getListOfManagersOrEmployees();
+  const managerList = await getListOfManagersOrEmployees();
+ 
+
+  const employeesChoices = employeesList.map((manager) => manager.full_name);
+  const managerChoices = managerList.map((manager) => manager.full_name);
+ 
+  const answers = await inquirer.prompt([
+    {
+      type: "list",
+      name: "employeeList",
+      message: "Which employee's manager do you want to update?",
+      choices: employeesChoices,
+    },
+    {
+      type: "list",
+      name: "managerListInfo",
+      message: "What manager do you want to assign the selected employee?",
+      choices: managerChoices,
     },
   ]);
   return answers;
