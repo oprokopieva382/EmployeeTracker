@@ -13,6 +13,7 @@ const {
   updateEmployeeRole,
   updateEmployeeManager,
   viewEmployeesByManager,
+  viewEmployeesByDepartment,
   getListOfExistingManagers,
 } = require("./requests.js");
 
@@ -34,6 +35,11 @@ const handleAction = async (action) => {
     case "View Employees By Manager":
       const managerInfo = await promptUserForManagerName();
       await viewEmployeesByManager(managerInfo);
+      mainMenuPrompts();
+      break;
+    case "View Employees By Department":
+      const departmentInfo = await promptUserForDepartment();
+      await viewEmployeesByDepartment(departmentInfo);
       mainMenuPrompts();
       break;
     case "Add A Department":
@@ -79,6 +85,7 @@ const mainMenuPrompts = async () => {
           "View Employees By Manager",
           "View All Roles",
           "View All Departments",
+          "View Employees By Department",
           "Add An Employee",
           "Add A Role",
           "Add A Department",
@@ -92,6 +99,20 @@ const mainMenuPrompts = async () => {
   } catch (err) {
     console.error("Error:", err);
   }
+};
+
+// Prompt the user to choose the department name from list
+const promptUserForDepartment = async () => {
+  const departmentsList = await getDepartmentsList();
+  const answer = await inquirer.prompt([
+    {
+      type: "list",
+      name: "departmentName",
+      message: "Which department does the role belong to?",
+      choices: departmentsList.map((department) => department.name),
+    },
+  ]);
+  return answer;
 };
 
 // Prompt the user for the department name

@@ -129,6 +129,49 @@ const viewEmployeesByManager = async (managerInfo) => {
     console.error("Error:", err);
   }
 };
+
+// Function to retrieve and display employees by department
+const viewEmployeesByDepartment = async (departmentInfo) => {
+  try {
+    const { departmentName } = departmentInfo;
+    // Get the role ID based on the selected department name
+    const [departmentRows] = await dbConnection
+      .promise()
+      .query("SELECT id FROM department WHERE name = ?", [departmentName]);
+    if (departmentRows.length === 0) {
+      console.error("Department not found.");
+      return;
+    }
+
+    const roleId = departmentRows[0].id;
+
+    // Get the employees who have the selected department
+    const [rows] = await dbConnection.promise().query(
+      `
+      SELECT e.first_name, e.last_name,
+      CONCAT(e.first_name, " ", e.last_name) AS employee
+      FROM employees e
+      WHERE e.role_id =?
+    `,
+      [roleId]
+    );
+
+    // Create a new table
+    const table = new Table();
+
+    rows.forEach((employee) => {
+      table.cell("First name", employee.first_name);
+      table.cell("Last name", employee.last_name);
+      table.newRow();
+    });
+
+    // Display the table of employees
+    console.log(table.toString());
+  } catch (err) {
+    console.error("Error:", err);
+  }
+};
+
 // Function to add a department to the database
 const addDepartment = async (name) => {
   try {
@@ -379,5 +422,6 @@ module.exports = {
   updateEmployeeRole,
   updateEmployeeManager,
   viewEmployeesByManager,
+  viewEmployeesByDepartment,
   getListOfExistingManagers,
 };
