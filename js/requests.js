@@ -260,6 +260,52 @@ const updateEmployeeRole = async (dataToUpdate) => {
     console.error("Error in updating employee role:", err);
   }
 };
+
+// Function to update a employee manager in the database
+const updateEmployeeManager = async (toUpdateData) => {
+  try {
+    const { employeeList, managerListInfo } = toUpdateData;
+    // Get the employee's ID based on their full name
+    const [employeeRows] = await dbConnection
+      .promise()
+      .query(
+        "SELECT id FROM employees WHERE CONCAT(first_name, ' ', last_name) = ?",
+        [employeeList]
+      );
+    if (employeeRows.length === 0) {
+      console.error("Employee not found.");
+      return;
+    }
+
+    const employeeId = employeeRows[0].id;
+
+    // Get the manager ID based on their full name
+    const [managerRows] = await dbConnection
+      .promise()
+      .query(
+        "SELECT id FROM employees WHERE CONCAT(first_name, ' ', last_name) = ?",
+        [managerListInfo]
+      );
+    if (managerRows.length === 0) {
+      console.error("Mabager not found.");
+      return;
+    }
+
+    const managerId = managerRows[0].id;
+
+    // Update the employee's manager in the database
+    await dbConnection
+      .promise()
+      .query("UPDATE employees SET manager_id = ? WHERE id=?", [
+        managerId,
+        employeeId,
+      ]);
+    console.log(`Updated manager for ${employeeList} to ${managerListInfo}`);
+  } catch (err) {
+    console.error("Error in updating employee manager:", err);
+  }
+};
+
 module.exports = {
   viewAllDepartments,
   viewAllRoles,
@@ -271,4 +317,5 @@ module.exports = {
   getListOfManagersOrEmployees,
   addEmployee,
   updateEmployeeRole,
+  updateEmployeeManager,
 };

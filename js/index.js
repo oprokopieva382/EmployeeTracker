@@ -11,6 +11,7 @@ const {
   getListOfManagersOrEmployees,
   addEmployee,
   updateEmployeeRole,
+  updateEmployeeManager,
 } = require("./requests.js");
 
 // Function to handle each action based on the user's choice
