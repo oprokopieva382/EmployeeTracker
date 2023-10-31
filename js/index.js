@@ -7,6 +7,9 @@ const {
   addDepartment,
   addRole,
   getDepartmentsList,
+  getRolesList,
+  getManagersList,
+  addEmployee,
 } = require("./requests.js");
 
 // Function to handle each action based on the user's choice
@@ -35,7 +38,9 @@ const handleAction = async (action) => {
       mainMenuPrompts();
       break;
     case "Add An Employee":
-      // Handle the add employee logic
+      const employeeData = await promptUserForEmployeeInfo();
+      await addEmployee(employeeData);
+      mainMenuPrompts();
       break;
     case "Update An Employee Role":
       // Handle the update employee role logic
@@ -107,26 +112,63 @@ const promptUserForRoleInfo = async () => {
   return answers;
 };
 
-const projectNameDisplay = ()=> {
+// Prompt the user to add employee details
+const promptUserForEmployeeInfo = async () => {
+  const rolesList = await getRolesList();
+  const managersList = await getManagersList();
 
-const projectText = "Employee\n\nManager";
- figlet.text(
-   projectText,
-   {
-     font: "Standard", 
-   },
-   (err, data) => {
-     if (err) {
-       console.log("Something went wrong...");
-       console.dir(err);
-       return;
-     }
-     console.log(data);
-     mainMenuPrompts();
-   }
- );
-}
+  // Add "None" as the first option for the manager
+  const managerChoices = [
+    "None",
+    ...managersList.map((manager) => manager.full_name),
+  ];
+
+  const answers = await inquirer.prompt([
+    {
+      type: "input",
+      name: "firstName",
+      message: "What is the employee's first name?",
+    },
+    {
+      type: "input",
+      name: "lastName",
+      message: "What is the employee's last name?",
+    },
+    {
+      type: "list",
+      name: "rolesDetails",
+      message: "What is the employee's role?",
+      choices: rolesList.map((role) => role.title),
+    },
+    {
+      type: "list",
+      name: "managerDetails",
+      message: "Who is the employee's manager?",
+      choices: managerChoices,
+    },
+  ]);
+  return answers;
+};
+
+// Function for text art
+const projectNameDisplay = () => {
+  const projectText = "Employee\n\nManager";
+  figlet.text(
+    projectText,
+    {
+      font: "Standard",
+    },
+    (err, data) => {
+      if (err) {
+        console.log("Something went wrong...");
+        console.dir(err);
+        return;
+      }
+      console.log(data);
+      mainMenuPrompts();
+    }
+  );
+};
 
 // Start main menu prompts
-projectNameDisplay()
-
+projectNameDisplay();

@@ -1,7 +1,6 @@
 const { dbConnection } = require("../app.js");
 const Table = require("easy-table");
 
-
 // Function to retrieve and display all departments
 const viewAllDepartments = async () => {
   try {
@@ -111,6 +110,33 @@ const getDepartmentsList = async () => {
   }
 };
 
+// Function to get roles list from the database
+const getRolesList = async () => {
+  try {
+    const [rows] = await dbConnection.promise().query("SELECT title FROM role");
+    return rows;
+  } catch (err) {
+    console.error("Error fetching departments:", err);
+    return [];
+  }
+};
+
+// Function to get manager list from the database
+const getManagersList = async () => {
+  try {
+    const [rows] = await dbConnection
+      .promise()
+      .query(
+        "SELECT CONCAT(e.first_name, ' ', e.last_name) AS full_name FROM employees e"
+      );
+
+    return rows
+  } catch (err) {
+    console.error("Error fetching departments:", err);
+    return [];
+  }
+};
+
 // Function to add a role to the database
 const addRole = async (info) => {
   const { roleTitle, roleSalary, departmentName } = info;
@@ -139,6 +165,29 @@ const addRole = async (info) => {
   }
 };
 
+// Function to add a employee to the database
+const addEmployee = async (employeeData)=> {
+  try {
+    const { firstName, lastName, roleDetails, managerDetails } = employeeData;
+
+    // Get the role ID based on the selected role title
+    const [roleRows] = await dbConnection
+      .promise()
+      .query("SELECT id FROM role WHERE title = ?", [roleDetails]);
+
+    if (!roleRows.length) {
+      console.error("Role not found.");
+      return;
+    }
+
+    const roleId = roleRows[0].id;
+
+    // Get the manager ID based on the selected manager full name
+    
+  }catch(err){
+    console.error("Error adding employee:", err);
+  }
+};
 module.exports = {
   viewAllDepartments,
   viewAllRoles,
@@ -146,4 +195,7 @@ module.exports = {
   addDepartment,
   addRole,
   getDepartmentsList,
+  getRolesList,
+  getManagersList,
+  addEmployee,
 };
