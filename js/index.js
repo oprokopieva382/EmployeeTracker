@@ -12,6 +12,8 @@ const {
   addEmployee,
   updateEmployeeRole,
   updateEmployeeManager,
+  viewEmployeesByManager,
+  getListOfExistingManagers,
 } = require("./requests.js");
 
 // Function to handle each action based on the user's choice
@@ -27,6 +29,11 @@ const handleAction = async (action) => {
       break;
     case "View All Employees":
       await viewAllEmployees();
+      mainMenuPrompts();
+      break;
+    case "View Employees By Manager":
+      const managerInfo = await promptUserForManagerName();
+      await viewEmployeesByManager(managerInfo);
       mainMenuPrompts();
       break;
     case "Add A Department":
@@ -69,13 +76,14 @@ const mainMenuPrompts = async () => {
         message: "What would you like to do?",
         choices: [
           "View All Employees",
-          "Add An Employee",
-          "Update An Employee Role",
+          "View Employees By Manager",
           "View All Roles",
-          "Add A Role",
           "View All Departments",
+          "Add An Employee",
+          "Add A Role",
           "Add A Department",
-          "Update An Employee Manager"
+          "Update An Employee Role",
+          "Update An Employee Manager",
         ],
       },
     ]);
@@ -96,6 +104,22 @@ const promptUserForDepartmentName = async () => {
     },
   ]);
   return answer.departmentName;
+};
+
+// Prompt the user for the manager name
+const promptUserForManagerName = async () => {
+  const managerList = await getListOfExistingManagers();
+  const managerChoices = managerList.map((manager) => manager.full_name);
+
+  const answer = await inquirer.prompt([
+    {
+      type: "list",
+      name: "managerListInfo",
+      message: "What manager employees do you want to see?",
+      choices: managerChoices,
+    },
+  ]);
+  return answer;
 };
 
 // Prompt the user to add role details
@@ -190,11 +214,10 @@ const promptUserForUpdateRole = async () => {
 const promptUserForUpdateManager = async () => {
   const employeesList = await getListOfManagersOrEmployees();
   const managerList = await getListOfManagersOrEmployees();
- 
 
   const employeesChoices = employeesList.map((manager) => manager.full_name);
   const managerChoices = managerList.map((manager) => manager.full_name);
- 
+
   const answers = await inquirer.prompt([
     {
       type: "list",

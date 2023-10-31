@@ -85,6 +85,50 @@ const viewAllEmployees = async () => {
   }
 };
 
+// Function to retrieve and display employees by manager
+const viewEmployeesByManager = async (managerInfo) => {
+  try {
+    const { managerListInfo } = managerInfo;
+    // Get the manager ID based on their full name
+    const [managerRows] = await dbConnection
+      .promise()
+      .query(
+        "SELECT id FROM employees WHERE CONCAT(first_name, ' ', last_name) = ?",
+        [managerListInfo]
+      );
+    if (managerRows.length === 0) {
+      console.error("Manager not found.");
+      return;
+    }
+
+    const managerId = managerRows[0].id;
+
+    // Get the employees who have the selected manager
+    const [rows] = await dbConnection.promise().query(
+      `
+      SELECT e.first_name, e.last_name,
+      CONCAT(e.first_name, " ", e.last_name) AS employee
+      FROM employees e
+      WHERE e.manager_id =?
+    `,
+      [managerId]
+    );
+
+    // Create a new table
+    const table = new Table();
+
+    rows.forEach((employee) => {
+      table.cell("First name", employee.first_name);
+      table.cell("Last name", employee.last_name);
+      table.newRow();
+    });
+
+    // Display the table of employees
+    console.log(table.toString());
+  } catch (err) {
+    console.error("Error:", err);
+  }
+};
 // Function to add a department to the database
 const addDepartment = async (name) => {
   try {
@@ -121,13 +165,29 @@ const getRolesList = async () => {
   }
 };
 
-// Function to get manager list from the database
+// Function to get existing and potential managers or employees list from the database
 const getListOfManagersOrEmployees = async () => {
   try {
     const [rows] = await dbConnection
       .promise()
       .query(
         "SELECT CONCAT(e.first_name, ' ', e.last_name) AS full_name FROM employees e"
+      );
+
+    return rows;
+  } catch (err) {
+    console.error("Error fetching departments:", err);
+    return [];
+  }
+};
+
+// Function to get existing  managers list from the database
+const getListOfExistingManagers = async () => {
+  try {
+    const [rows] = await dbConnection
+      .promise()
+      .query(
+        "SELECT CONCAT(e.first_name, ' ', e.last_name) AS full_name FROM employees e WHERE e.id IN (SELECT DISTINCT manager_id FROM employees)"
       );
 
     return rows;
@@ -287,7 +347,7 @@ const updateEmployeeManager = async (toUpdateData) => {
         [managerListInfo]
       );
     if (managerRows.length === 0) {
-      console.error("Mabager not found.");
+      console.error("Manager not found.");
       return;
     }
 
@@ -318,4 +378,6 @@ module.exports = {
   addEmployee,
   updateEmployeeRole,
   updateEmployeeManager,
+  viewEmployeesByManager,
+  getListOfExistingManagers,
 };
