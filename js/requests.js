@@ -85,6 +85,93 @@ const viewAllEmployees = async () => {
   }
 };
 
+// Function to retrieve and display employees by manager
+const viewEmployeesByManager = async (managerInfo) => {
+  try {
+    const { managerListInfo } = managerInfo;
+    // Get the manager ID based on their full name
+    const [managerRows] = await dbConnection
+      .promise()
+      .query(
+        "SELECT id FROM employees WHERE CONCAT(first_name, ' ', last_name) = ?",
+        [managerListInfo]
+      );
+    if (managerRows.length === 0) {
+      console.error("Manager not found.");
+      return;
+    }
+
+    const managerId = managerRows[0].id;
+
+    // Get the employees who have the selected manager
+    const [rows] = await dbConnection.promise().query(
+      `
+      SELECT e.first_name, e.last_name,
+      CONCAT(e.first_name, " ", e.last_name) AS employee
+      FROM employees e
+      WHERE e.manager_id =?
+    `,
+      [managerId]
+    );
+
+    // Create a new table
+    const table = new Table();
+
+    rows.forEach((employee) => {
+      table.cell("First name", employee.first_name);
+      table.cell("Last name", employee.last_name);
+      table.newRow();
+    });
+
+    // Display the table of employees
+    console.log(table.toString());
+  } catch (err) {
+    console.error("Error:", err);
+  }
+};
+
+// Function to retrieve and display employees by department
+const viewEmployeesByDepartment = async (departmentInfo) => {
+  try {
+    const { departmentName } = departmentInfo;
+    // Get the role ID based on the selected department name
+    const [departmentRows] = await dbConnection
+      .promise()
+      .query("SELECT id FROM department WHERE name = ?", [departmentName]);
+    if (departmentRows.length === 0) {
+      console.error("Department not found.");
+      return;
+    }
+
+    const roleId = departmentRows[0].id;
+
+    // Get the employees who have the selected department
+    const [rows] = await dbConnection.promise().query(
+      `
+      SELECT e.first_name, e.last_name,
+      CONCAT(e.first_name, " ", e.last_name) AS employee
+      FROM employees e
+      WHERE e.role_id =?
+    `,
+      [roleId]
+    );
+
+    // Create a new table
+    const table = new Table();
+
+    rows.forEach((employee) => {
+      table.cell("First name", employee.first_name);
+      table.cell("Last name", employee.last_name);
+      table.newRow();
+    });
+
+    // Display the table of employees
+    console.log(table.toString());
+  } catch (err) {
+    console.error("Error:", err);
+  }
+};
+
 // Function to add a department to the database
 const addDepartment = async (name) => {
   try {
@@ -121,13 +208,29 @@ const getRolesList = async () => {
   }
 };
 
-// Function to get manager list from the database
-const getManagersList = async () => {
+// Function to get existing and potential managers or employees list from the database
+const getListOfManagersOrEmployees = async () => {
   try {
     const [rows] = await dbConnection
       .promise()
       .query(
         "SELECT CONCAT(e.first_name, ' ', e.last_name) AS full_name FROM employees e"
+      );
+
+    return rows;
+  } catch (err) {
+    console.error("Error fetching departments:", err);
+    return [];
+  }
+};
+
+// Function to get existing  managers list from the database
+const getListOfExistingManagers = async () => {
+  try {
+    const [rows] = await dbConnection
+      .promise()
+      .query(
+        "SELECT CONCAT(e.first_name, ' ', e.last_name) AS full_name FROM employees e WHERE e.id IN (SELECT DISTINCT manager_id FROM employees)"
       );
 
     return rows;
@@ -169,9 +272,9 @@ const addRole = async (info) => {
 const addEmployee = async (employeeData) => {
   try {
     const { firstName, lastName, roleDetails, managerDetails } = employeeData;
- 
+
     // Make sure roleDetails is a string (role title)
-    if (typeof roleDetails !== 'string') {
+    if (typeof roleDetails !== "string") {
       console.error("Invalid role selection.");
       return;
     }
@@ -218,6 +321,94 @@ const addEmployee = async (employeeData) => {
   }
 };
 
+// Function to update a employee role in the database
+const updateEmployeeRole = async (dataToUpdate) => {
+  try {
+    const { employeeList, rolesListInfo } = dataToUpdate;
+    // Get the employee's ID based on their full name
+    const [employeeRows] = await dbConnection
+      .promise()
+      .query(
+        "SELECT id FROM employees WHERE CONCAT(first_name, ' ', last_name) = ?",
+        [employeeList]
+      );
+    if (employeeRows.length === 0) {
+      console.error("Employee not found.");
+      return;
+    }
+
+    const employeeId = employeeRows[0].id;
+
+    // Get the role ID based on the selected role title
+    const [roleRows] = await dbConnection
+      .promise()
+      .query("SELECT id FROM role WHERE title = ?", [rolesListInfo]);
+
+    if (!roleRows.length) {
+      console.error("Role not found.");
+      return;
+    }
+
+    const roleId = roleRows[0].id;
+
+    // Update the employee's role in the database
+    await dbConnection
+      .promise()
+      .query("UPDATE employees SET role_id = ? WHERE id=?", [
+        roleId,
+        employeeId,
+      ]);
+    console.log(`Updated role for ${employeeList} to ${rolesListInfo}`);
+  } catch (err) {
+    console.error("Error in updating employee role:", err);
+  }
+};
+
+// Function to update a employee manager in the database
+const updateEmployeeManager = async (toUpdateData) => {
+  try {
+    const { employeeList, managerListInfo } = toUpdateData;
+    // Get the employee's ID based on their full name
+    const [employeeRows] = await dbConnection
+      .promise()
+      .query(
+        "SELECT id FROM employees WHERE CONCAT(first_name, ' ', last_name) = ?",
+        [employeeList]
+      );
+    if (employeeRows.length === 0) {
+      console.error("Employee not found.");
+      return;
+    }
+
+    const employeeId = employeeRows[0].id;
+
+    // Get the manager ID based on their full name
+    const [managerRows] = await dbConnection
+      .promise()
+      .query(
+        "SELECT id FROM employees WHERE CONCAT(first_name, ' ', last_name) = ?",
+        [managerListInfo]
+      );
+    if (managerRows.length === 0) {
+      console.error("Manager not found.");
+      return;
+    }
+
+    const managerId = managerRows[0].id;
+
+    // Update the employee's manager in the database
+    await dbConnection
+      .promise()
+      .query("UPDATE employees SET manager_id = ? WHERE id=?", [
+        managerId,
+        employeeId,
+      ]);
+    console.log(`Updated manager for ${employeeList} to ${managerListInfo}`);
+  } catch (err) {
+    console.error("Error in updating employee manager:", err);
+  }
+};
+
 module.exports = {
   viewAllDepartments,
   viewAllRoles,
@@ -226,6 +417,11 @@ module.exports = {
   addRole,
   getDepartmentsList,
   getRolesList,
-  getManagersList,
+  getListOfManagersOrEmployees,
   addEmployee,
+  updateEmployeeRole,
+  updateEmployeeManager,
+  viewEmployeesByManager,
+  viewEmployeesByDepartment,
+  getListOfExistingManagers,
 };
