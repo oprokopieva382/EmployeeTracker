@@ -8,8 +8,9 @@ const {
   addRole,
   getDepartmentsList,
   getRolesList,
-  getManagersList,
+  getListOfManagersOrEmployees,
   addEmployee,
+  updateEmployeeRole,
 } = require("./requests.js");
 
 // Function to handle each action based on the user's choice
@@ -43,7 +44,9 @@ const handleAction = async (action) => {
       mainMenuPrompts();
       break;
     case "Update An Employee Role":
-      // Handle the update employee role logic
+      const dataToUpdate = await promptUserForUpdateRole();
+      await updateEmployeeRole(dataToUpdate);
+      mainMenuPrompts();
       break;
     default:
       console.log("Invalid choice. Please choose a valid option.");
@@ -115,7 +118,7 @@ const promptUserForRoleInfo = async () => {
 // Prompt the user to add employee details
 const promptUserForEmployeeInfo = async () => {
   const rolesList = await getRolesList();
-  const managersList = await getManagersList();
+  const managersList = await getListOfManagersOrEmployees();
 
   const roleTitles = rolesList.map((role) => role.title);
   // Add "None" as the first option for the manager
@@ -146,6 +149,31 @@ const promptUserForEmployeeInfo = async () => {
       name: "managerDetails",
       message: "Who is the employee's manager?",
       choices: managerChoices,
+    },
+  ]);
+  return answers;
+};
+
+// Prompt the user to update employee role
+const promptUserForUpdateRole = async () => {
+  const employeesList = await getListOfManagersOrEmployees();
+  const rolesList = await getRolesList();
+
+  const employeesChoices = employeesList.map((manager) => manager.full_name);
+  const roleTitles = rolesList.map((role) => role.title);
+
+  const answers = await inquirer.prompt([
+    {
+      type: "list",
+      name: "employeeList",
+      message: "Which employee's role do you want to update?",
+      choices: employeesChoices,
+    },
+    {
+      type: "list",
+      name: "rolesListInfo",
+      message: "Which role do you want to assign the selected employee?",
+      choices: roleTitles,
     },
   ]);
   return answers;

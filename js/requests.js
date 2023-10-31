@@ -122,7 +122,7 @@ const getRolesList = async () => {
 };
 
 // Function to get manager list from the database
-const getManagersList = async () => {
+const getListOfManagersOrEmployees = async () => {
   try {
     const [rows] = await dbConnection
       .promise()
@@ -169,9 +169,9 @@ const addRole = async (info) => {
 const addEmployee = async (employeeData) => {
   try {
     const { firstName, lastName, roleDetails, managerDetails } = employeeData;
- 
+
     // Make sure roleDetails is a string (role title)
-    if (typeof roleDetails !== 'string') {
+    if (typeof roleDetails !== "string") {
       console.error("Invalid role selection.");
       return;
     }
@@ -218,6 +218,48 @@ const addEmployee = async (employeeData) => {
   }
 };
 
+// Function to update a employee role in the database
+const updateEmployeeRole = async (dataToUpdate) => {
+  try {
+    const { employeeList, rolesListInfo } = dataToUpdate;
+    // Get the employee's ID based on their full name
+    const [employeeRows] = await dbConnection
+      .promise()
+      .query(
+        "SELECT id FROM employees WHERE CONCAT(first_name, ' ', last_name) = ?",
+        [employeeList]
+      );
+    if (employeeRows.length === 0) {
+      console.error("Employee not found.");
+      return;
+    }
+
+    const employeeId = employeeRows[0].id;
+
+    // Get the role ID based on the selected role title
+    const [roleRows] = await dbConnection
+      .promise()
+      .query("SELECT id FROM role WHERE title = ?", [rolesListInfo]);
+
+    if (!roleRows.length) {
+      console.error("Role not found.");
+      return;
+    }
+
+    const roleId = roleRows[0].id;
+
+    // Update the employee's role in the database
+    await dbConnection
+      .promise()
+      .query("UPDATE employees SET role_id = ? WHERE id=?", [
+        roleId,
+        employeeId,
+      ]);
+    console.log(`Updated role for ${employeeList} to ${rolesListInfo}`);
+  } catch (err) {
+    console.error("Error in updating employee role:", err);
+  }
+};
 module.exports = {
   viewAllDepartments,
   viewAllRoles,
@@ -226,6 +268,7 @@ module.exports = {
   addRole,
   getDepartmentsList,
   getRolesList,
-  getManagersList,
+  getListOfManagersOrEmployees,
   addEmployee,
+  updateEmployeeRole,
 };
